@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alat Posting Blogger</title>
+    <style>
+        #bpt-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            max-width: 800px;
+            margin: 20px auto;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 600px) {
+            #bpt-container {
+                padding: 0.8rem;
+                margin: 10px;
+            }
+        }
+
+        #bpt-container h2 {
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        #bpt-container label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #bbbbbb;
+        }
+
+        #bpt-container input[type="text"],
+        #bpt-container textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #555;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            border-radius: 6px;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #bpt-container input[type="text"]:focus,
+        #bpt-container textarea:focus,
+        #bpt-wysiwyg:focus {
+            outline: none;
+            border-color: #4285F4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
+        }
+
+        #bpt-container textarea#bpt-html-area {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            height: 300px;
+            resize: vertical;
+        }
+
+        #bpt-toolbar {
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            border-bottom: none;
+            padding: 8px;
+            border-radius: 6px 6px 0 0;
+        }
+
+        #bpt-toolbar button {
+            padding: 6px 12px;
+            border: 1px solid #666;
+            background: #3c3c3c;
+            color: #e0e0e0;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 5px;
+            transition: background-color 0.2s;
+        }
+        #bpt-toolbar button:hover {
+            background-color: #4f4f4f;
+        }
+
+        #bpt-wysiwyg {
+            border: 1px solid #555;
+            padding: 12px;
+            min-height: 300px;
+            background-color: #2d2d2d;
+            border-radius: 0 0 6px 6px;
+            overflow-y: auto;
+        }
+
+        #bpt-login-btn, #bpt-submit-btn {
+            background: linear-gradient(145deg, #4a90e2, #4285F4);
+            color: white;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #bpt-login-btn:hover, #bpt-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
+        }
+        
+        #bpt-submit-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #bpt-user-panel {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        #bpt-logout-btn {
+            background-color: #3c3c3c;
+            color: #ff8a80;
+            padding: 8px 15px;
+            font-size: 14px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        #bpt-logout-btn:hover {
+            background-color: #db4437;
+            color: #fff;
+        }
+
+        #bpt-status-msg {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            text-align: center;
+        }
+        #bpt-status-msg.success {
+            background-color: #2e7d32;
+            color: #ffffff;
+            display: block;
+        }
+        #bpt-status-msg.error {
+            background-color: #c62828;
+            color: #ffffff;
+            display: block;
+        }
+        #bpt-status-msg a {
+            color: #bbdefb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body style="background-color: #121212;">
+
+    <div id="bpt-container">
+        <div id="bpt-auth-section">
+            <h2>Alat Posting Modern</h2>
+            <p>Silakan login dengan akun Google yang memiliki akses sebagai Penulis di blog ini.</p>
+            <button id="bpt-login-btn">Login dengan Google</button>
+        </div>
+
+        <div id="bpt-form-section" style="display:none;">
+            <div id="bpt-user-panel">
+                <p>Login sebagai: <strong id="bpt-username"></strong></p>
+                <button id="bpt-logout-btn">Logout</button>
+            </div>
+            
+            <h2>Buat Postingan Baru</h2>
+            
+            <label for="post-title">Judul Postingan:</label>
+            <input type="text" id="post-title" name="post-title" placeholder="Masukkan judul di sini...">
+
+            <label for="post-labels">Label (pisahkan dengan koma):</label>
+            <input type="text" id="post-labels" name="post-labels" placeholder="contoh: manga, review, chapter baru">
+            
+            <label for="post-search-desc">Deskripsi Penelusuran (Meta Description):</label>
+            <textarea id="post-search-desc" name="post-search-desc" rows="3" maxlength="150" placeholder="Deskripsi singkat untuk SEO (maks 150 karakter)"></textarea>
+
+            <label>Isi Konten:</label>
+            <div id="bpt-toolbar">
+                 <button onclick="document.execCommand('bold', false, null);" title="Bold"><b>B</b></button>
+                 <button onclick="document.execCommand('italic', false, null);" title="Italic"><i>I</i></button>
+                 <button onclick="document.execCommand('underline', false, null);" title="Underline"><u>U</u></button>
+                 <button id="bpt-toggle-view">Ganti ke Tampilan HTML</button>
+            </div>
+            <div id="bpt-wysiwyg" contenteditable="true"></div>
+            <textarea id="bpt-html-area" style="display:none;"></textarea>
+
+            <button id="bpt-submit-btn">Publikasikan Postingan</button>
+            <div id="bpt-status-msg"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+
+    <script type='text/javascript'>
+    //<![CDATA[
+        const firebaseConfig = {
+            apiKey: "Api_key_firebase",
+            authDomain: "url_domain_dari_firebase",
+            projectId: "namaProject",
+            storageBucket: "url_app_project",
+            messagingSenderId: "id_dariFirebase",
+            appId: "kode_app_id"
+        };
+        const BLOG_ID = "id_blog_kamu";
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        } else {
+            firebase.app();
+        }
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        provider.addScope('https://www.googleapis.com/auth/blogger');
+        
+        const loginBtn = document.getElementById('bpt-login-btn');
+        const logoutBtn = document.getElementById('bpt-logout-btn');
+        const submitBtn = document.getElementById('bpt-submit-btn');
+        const toggleViewBtn = document.getElementById('bpt-toggle-view');
+        
+        const authSection = document.getElementById('bpt-auth-section');
+        const formSection = document.getElementById('bpt-form-section');
+        
+        const userDisplayName = document.getElementById('bpt-username');
+        const statusMessage = document.getElementById('bpt-status-msg');
+
+        const titleInput = document.getElementById('post-title');
+        const labelsInput = document.getElementById('post-labels');
+        const searchDescInput = document.getElementById('post-search-desc');
+        const contentWysiwyg = document.getElementById('bpt-wysiwyg');
+        const contentHtml = document.getElementById('bpt-html-area');
+
+        let currentViewIsHtml = false;
+        let userAccessToken = null;
+
+        const updateUI = (user) => {
+            if (user) {
+                authSection.style.display = 'none';
+                formSection.style.display = 'block';
+                userDisplayName.textContent = user.displayName || user.email;
+            } else {
+                authSection.style.display = 'block';
+                formSection.style.display = 'none';
+                userDisplayName.textContent = '';
+                userAccessToken = null;
+            }
+        };
+        
+        auth.onAuthStateChanged((user) => {
+            if(user) {
+                const storedToken = sessionStorage.getItem('bpt_accessToken');
+                if (storedToken) {
+                    userAccessToken = storedToken;
+                }
+            }
+            updateUI(user);
+        });
+
+        loginBtn.addEventListener('click', () => {
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    const credential = result.credential;
+                    userAccessToken = credential.accessToken;
+                    sessionStorage.setItem('bpt_accessToken', userAccessToken);
+                    updateUI(result.user);
+                }).catch((error) => {
+                    console.error("Login Gagal:", error);
+                    showStatus(`Login Gagal: ${error.message}`, 'error');
+                });
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                sessionStorage.removeItem('bpt_accessToken');
+            });
+        });
+        
+        toggleViewBtn.addEventListener('click', () => {
+            currentViewIsHtml = !currentViewIsHtml;
+            if(currentViewIsHtml) {
+                contentHtml.value = contentWysiwyg.innerHTML;
+                contentWysiwyg.style.display = 'none';
+                contentHtml.style.display = 'block';
+                contentHtml.focus();
+                toggleViewBtn.textContent = 'Ganti ke Tampilan Menulis';
+                document.getElementById('bpt-toolbar').style.display = 'none';
+            } else {
+                contentWysiwyg.innerHTML = contentHtml.value;
+                contentHtml.style.display = 'none';
+                contentWysiwyg.style.display = 'block';
+                contentWysiwyg.focus();
+                toggleViewBtn.textContent = 'Ganti ke Tampilan HTML';
+                document.getElementById('bpt-toolbar').style.display = 'block';
+            }
+        });
+
+        const showStatus = (message, type) => {
+            statusMessage.innerHTML = message;
+            statusMessage.className = `bpt-status-message ${type}`;
+        };
+
+        submitBtn.addEventListener('click', () => {
+            if (!userAccessToken) {
+                showStatus('Otentikasi tidak valid. Silakan logout lalu login kembali.', 'error');
+                return;
+            }
+            
+            const title = titleInput.value;
+            const labels = labelsInput.value.split(',').map(label => label.trim()).filter(label => label);
+            const searchDescription = searchDescInput.value;
+            const content = currentViewIsHtml ? contentHtml.value : contentWysiwyg.innerHTML;
+
+            if (!title || !content) {
+                showStatus('Judul dan Isi Konten tidak boleh kosong.', 'error');
+                return;
+            }
+
+            const postBody = {
+                kind: "blogger#post",
+                blog: { id: BLOG_ID },
+                title: title,
+                content: content,
+            };
+
+            if (labels.length > 0) postBody.labels = labels;
+            if (searchDescription) postBody.customMetaData = searchDescription;
+
+            showStatus('Memproses publikasi...', 'success');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Memproses...';
+
+            fetch(`https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${userAccessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(postBody)
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    showStatus('Sesi Anda telah berakhir. Silakan login kembali.', 'error');
+                    auth.signOut();
+                    sessionStorage.removeItem('bpt_accessToken');
+                    return Promise.reject(new Error('Token expired'));
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    showStatus(`Gagal mempublikasikan: ${data.error.message}`, 'error');
+                } else {
+                    console.log('Sukses:', data);
+                    showStatus(`Postingan "${data.title}" berhasil dipublikasikan! Lihat di <a href="${data.url}" target="_blank">sini</a>.`, 'success');
+                    titleInput.value = '';
+                    labelsInput.value = '';
+                    searchDescInput.value = '';
+                    contentWysiwyg.innerHTML = '';
+                    contentHtml.value = '';
+                }
+            })
+            .catch(error => {
+                if (error.message !== 'Token expired') {
+                    console.error('Fetch Error:', error);
+                    showStatus(`Terjadi kesalahan jaringan atau API: ${error.message}`, 'error');
+                }
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Publikasikan Postingan';
+            });
+        });
+    //]]>
+    </script>
+
+</body>
+</html>
