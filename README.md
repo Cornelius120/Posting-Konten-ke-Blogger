@@ -13,10 +13,19 @@ Kode HTML/JS yang telah dibuat (`panel_admin.html`) dirancang untuk dipasang pad
 #### **1. Siapkan Kode**
 
 * Buka file HTML yang sudah dibersihkan: `panel_admin.html`.
-* Ganti bagian:
+* Lakukan penyesuaian pada bagian-bagian berikut:
 
-  * `const firebaseConfig = { ... }` dengan konfigurasi asli Firebase Project.
-  * `const BLOG_ID = "..."` dengan ID blogmu.
+  **A. Konfigurasi Firebase & Blog ID**
+  * Ganti `const firebaseConfig = { ... }` dengan konfigurasi asli Firebase Project Anda.
+  * Ganti `const BLOG_ID = "..."` dengan ID blog Anda.
+
+  **B. Konfigurasi TinyMCE (Editor)**
+  * Cari tag script untuk TinyMCE dan ganti `LINK_TINYMCE` dengan URL CDN yang menyertakan API Key Anda (Dapatkan gratis di [tiny.cloud](https://www.tiny.cloud/)).
+  * Formatnya harus seperti ini:
+    ```
+    <!-- Ganti dengan cdn dari tinymce yang sudah ada api keynya (penting agar tinymce bisa di load) -->
+    <script src="LINK_TINYMCE" referrerpolicy="origin" crossorigin="anonymous"></script>
+    ```
 
 #### **2. Buat Halaman Baru**
 
@@ -29,12 +38,11 @@ Kode HTML/JS yang telah dibuat (`panel_admin.html`) dirancang untuk dipasang pad
 
 1. Ubah mode editor ke **Tampilan HTML (HTML View)**.
 2. Hapus semua isi yang ada.
-3. Copy seluruh isi file `panel_admin.html` dan paste ke editor.
+3. Copy seluruh isi file `panel_admin.html` yang sudah diedit tadi dan paste ke editor.
 
 #### **4. Pengaturan Halaman**
 
 * Pada bagian **Options/Pilihan**, set:
-
   * **Komentar:** *Jangan izinkan, sembunyikan yang ada*.
 * Klik **Publikasikan (Publish)**.
 
@@ -50,7 +58,7 @@ Salin kode berikut dan tempelkan di tab **Rules** pada Firestore Database di Fir
 
 ### **Rules Firestore**
 
-```js
+```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -75,3 +83,6 @@ service cloud.firestore {
   }
 }
 ```
+download
+content_copy
+expand_less
