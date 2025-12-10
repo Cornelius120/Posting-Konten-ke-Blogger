@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alat Posting Blogger</title>
+    <title>Alat Posting Blogger + TinyMCE</title>
+    <!-- Ganti dengan cdn dari tinymce yang sudah ada api keynya (penting agar tinymce bisa di load) -->
+    <script src="https://cdn.tiny.cloud/1/9oe0t097cxxli8cljd4j9f9y35r48fe42ypdgyajznokjmzv/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+
     <style>
         #bpt-container {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #1e1e1e;
             color: #e0e0e0;
             border: 1px solid #444;
             padding: 1rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            max-width: 800px;
             margin: 20px auto;
             box-sizing: border-box;
         }
@@ -42,7 +44,7 @@
         }
 
         #bpt-container input[type="text"],
-        #bpt-container textarea {
+        #bpt-container textarea.meta-desc {
             width: 100%;
             padding: 12px;
             border: 1px solid #555;
@@ -54,51 +56,13 @@
         }
 
         #bpt-container input[type="text"]:focus,
-        #bpt-container textarea:focus,
-        #bpt-wysiwyg:focus {
+        #bpt-container textarea.meta-desc:focus {
             outline: none;
             border-color: #4285F4;
             box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
         }
 
-        #bpt-container textarea#bpt-html-area {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            height: 300px;
-            resize: vertical;
-        }
-
-        #bpt-toolbar {
-            background-color: #2d2d2d;
-            border: 1px solid #555;
-            border-bottom: none;
-            padding: 8px;
-            border-radius: 6px 6px 0 0;
-        }
-
-        #bpt-toolbar button {
-            padding: 6px 12px;
-            border: 1px solid #666;
-            background: #3c3c3c;
-            color: #e0e0e0;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-right: 5px;
-            transition: background-color 0.2s;
-        }
-        #bpt-toolbar button:hover {
-            background-color: #4f4f4f;
-        }
-
-        #bpt-wysiwyg {
-            border: 1px solid #555;
-            padding: 12px;
-            min-height: 300px;
-            background-color: #2d2d2d;
-            border-radius: 0 0 6px 6px;
-            overflow-y: auto;
-        }
-
+        /* Tombol Login & Submit */
         #bpt-login-btn, #bpt-submit-btn {
             background: linear-gradient(145deg, #4a90e2, #4285F4);
             color: white;
@@ -160,19 +124,14 @@
             display: none;
             text-align: center;
         }
-        #bpt-status-msg.success {
-            background-color: #2e7d32;
-            color: #ffffff;
-            display: block;
-        }
-        #bpt-status-msg.error {
-            background-color: #c62828;
-            color: #ffffff;
-            display: block;
-        }
-        #bpt-status-msg a {
-            color: #bbdefb;
-            font-weight: bold;
+        #bpt-status-msg.success { background-color: #2e7d32; color: #ffffff; display: block; }
+        #bpt-status-msg.error { background-color: #c62828; color: #ffffff; display: block; }
+        #bpt-status-msg a { color: #bbdefb; font-weight: bold; }
+        
+        /* Dark mode fix untuk TinyMCE container */
+        .tox-tinymce {
+            border-radius: 6px !important;
+            border: 1px solid #555 !important;
         }
     </style>
 </head>
@@ -200,17 +159,12 @@
             <input type="text" id="post-labels" name="post-labels" placeholder="contoh: manga, review, chapter baru">
             
             <label for="post-search-desc">Deskripsi Penelusuran (Meta Description):</label>
-            <textarea id="post-search-desc" name="post-search-desc" rows="3" maxlength="150" placeholder="Deskripsi singkat untuk SEO (maks 150 karakter)"></textarea>
+            <textarea id="post-search-desc" class="meta-desc" name="post-search-desc" rows="3" maxlength="150" placeholder="Deskripsi singkat untuk SEO (maks 150 karakter)"></textarea>
 
             <label>Isi Konten:</label>
-            <div id="bpt-toolbar">
-                 <button onclick="document.execCommand('bold', false, null);" title="Bold"><b>B</b></button>
-                 <button onclick="document.execCommand('italic', false, null);" title="Italic"><i>I</i></button>
-                 <button onclick="document.execCommand('underline', false, null);" title="Underline"><u>U</u></button>
-                 <button id="bpt-toggle-view">Ganti ke Tampilan HTML</button>
-            </div>
-            <div id="bpt-wysiwyg" contenteditable="true"></div>
-            <textarea id="bpt-html-area" style="display:none;"></textarea>
+            
+            <!-- Area Editor TinyMCE -->
+            <textarea id="editor"></textarea>
 
             <button id="bpt-submit-btn">Publikasikan Postingan</button>
             <div id="bpt-status-msg"></div>
@@ -223,6 +177,7 @@
 
     <script type='text/javascript'>
     //<![CDATA[
+        // Konfigurasi Firebase Anda (Tetap sama)
         const firebaseConfig = {
             apiKey: "Api_key_firebase",
             authDomain: "url_domain_dari_firebase",
@@ -233,6 +188,7 @@
         };
         const BLOG_ID = "id_blog_kamu";
 
+        // Inisialisasi Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         } else {
@@ -240,29 +196,42 @@
         }
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
-        
         provider.addScope('https://www.googleapis.com/auth/blogger');
         
+        // Elemen DOM
         const loginBtn = document.getElementById('bpt-login-btn');
         const logoutBtn = document.getElementById('bpt-logout-btn');
         const submitBtn = document.getElementById('bpt-submit-btn');
-        const toggleViewBtn = document.getElementById('bpt-toggle-view');
-        
         const authSection = document.getElementById('bpt-auth-section');
         const formSection = document.getElementById('bpt-form-section');
-        
         const userDisplayName = document.getElementById('bpt-username');
         const statusMessage = document.getElementById('bpt-status-msg');
-
         const titleInput = document.getElementById('post-title');
         const labelsInput = document.getElementById('post-labels');
         const searchDescInput = document.getElementById('post-search-desc');
-        const contentWysiwyg = document.getElementById('bpt-wysiwyg');
-        const contentHtml = document.getElementById('bpt-html-area');
 
-        let currentViewIsHtml = false;
         let userAccessToken = null;
 
+        // Inisialisasi TinyMCE
+        tinymce.init({
+            selector: '#editor',
+            height: 400,
+            menubar: false,
+            skin: 'oxide-dark', // Tema gelap agar cocok dengan web Anda
+            content_css: 'dark',
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | blocks | ' +
+                'bold italic backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | image code | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        });
+
+        // Auth Listener
         const updateUI = (user) => {
             if (user) {
                 authSection.style.display = 'none';
@@ -286,6 +255,7 @@
             updateUI(user);
         });
 
+        // Login Logic
         loginBtn.addEventListener('click', () => {
             auth.signInWithPopup(provider)
                 .then((result) => {
@@ -299,29 +269,11 @@
                 });
         });
 
+        // Logout Logic
         logoutBtn.addEventListener('click', () => {
             auth.signOut().then(() => {
                 sessionStorage.removeItem('bpt_accessToken');
             });
-        });
-        
-        toggleViewBtn.addEventListener('click', () => {
-            currentViewIsHtml = !currentViewIsHtml;
-            if(currentViewIsHtml) {
-                contentHtml.value = contentWysiwyg.innerHTML;
-                contentWysiwyg.style.display = 'none';
-                contentHtml.style.display = 'block';
-                contentHtml.focus();
-                toggleViewBtn.textContent = 'Ganti ke Tampilan Menulis';
-                document.getElementById('bpt-toolbar').style.display = 'none';
-            } else {
-                contentWysiwyg.innerHTML = contentHtml.value;
-                contentHtml.style.display = 'none';
-                contentWysiwyg.style.display = 'block';
-                contentWysiwyg.focus();
-                toggleViewBtn.textContent = 'Ganti ke Tampilan HTML';
-                document.getElementById('bpt-toolbar').style.display = 'block';
-            }
         });
 
         const showStatus = (message, type) => {
@@ -329,6 +281,7 @@
             statusMessage.className = `bpt-status-message ${type}`;
         };
 
+        // Submit Logic (Dengan TinyMCE)
         submitBtn.addEventListener('click', () => {
             if (!userAccessToken) {
                 showStatus('Otentikasi tidak valid. Silakan logout lalu login kembali.', 'error');
@@ -338,7 +291,9 @@
             const title = titleInput.value;
             const labels = labelsInput.value.split(',').map(label => label.trim()).filter(label => label);
             const searchDescription = searchDescInput.value;
-            const content = currentViewIsHtml ? contentHtml.value : contentWysiwyg.innerHTML;
+            
+            // Perubahan Utama: Ambil konten dari TinyMCE
+            const content = tinymce.get('editor').getContent();
 
             if (!title || !content) {
                 showStatus('Judul dan Isi Konten tidak boleh kosong.', 'error');
@@ -386,8 +341,8 @@
                     titleInput.value = '';
                     labelsInput.value = '';
                     searchDescInput.value = '';
-                    contentWysiwyg.innerHTML = '';
-                    contentHtml.value = '';
+                    // Reset TinyMCE
+                    tinymce.get('editor').setContent('');
                 }
             })
             .catch(error => {
