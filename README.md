@@ -98,6 +98,3 @@ service cloud.firestore {
 ```
 Klik Publish.
 
-download
-content_copy
-expand_less
