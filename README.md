@@ -1,64 +1,77 @@
 # Dokumentasi Panel Admin Posting Blogger
 
-File ini berisi panduan instalasi untuk **Alat Posting Blogger (Panel Admin)** dan konfigurasi keamanan **Firestore Database**.
+File ini berisi panduan lengkap mulai dari konfigurasi Firebase, pemasangan **Alat Posting Blogger (Panel Admin)**, hingga pengaturan keamanan database.
 
 ---
 
-## 1. Cara Pemasangan di Blogger
+## 1. Persiapan Firebase Project
 
-Kode HTML/JS yang telah dibuat (`panel_admin.html`) dirancang untuk dipasang pada sebuah **Halaman Statis (Page)** di Blogger, bukan posting biasa. Ini berfungsi sebagai **Panel Admin** rahasia.
+Sebelum memasang kode, Anda wajib mengatur project di Firebase Console agar fitur Login dan Database berfungsi.
 
-### **Langkah-langkah Instalasi**
+### **A. Aktifkan Authentication**
+1. Buka [Firebase Console](https://console.firebase.google.com/).
+2. Masuk ke project Anda.
+3. Di menu sebelah kiri, pilih **Build** > **Authentication**.
+4. Klik **Get Started**.
+5. Pilih tab **Sign-in method**.
+6. Klik **Google**, lalu aktifkan tombol **Enable**.
+7. Masukkan nama project dan email support, lalu **Save**.
 
-#### **1. Siapkan Kode**
+### **B. Aktifkan Firestore Database**
+1. Di menu sebelah kiri, pilih **Build** > **Firestore Database**.
+2. Klik **Create Database**.
+3. Pilih lokasi server (pilih yang terdekat, misal: *asia-southeast2* untuk Jakarta).
+4. Klik **Start in Test Mode** (nanti kita ganti Rules-nya) atau **Production Mode**.
+5. Klik **Create**.
 
-* Buka file HTML yang sudah dibersihkan: `panel_admin.html`.
-* Lakukan penyesuaian pada bagian-bagian berikut:
+---
 
-  **A. Konfigurasi Firebase & Blog ID**
-  * Ganti `const firebaseConfig = { ... }` dengan konfigurasi asli Firebase Project Anda.
-  * Ganti `const BLOG_ID = "..."` dengan ID blog Anda.
+## 2. Persiapan Kode (`panel_admin.html`)
 
-  **B. Konfigurasi TinyMCE (Editor)**
-  * Cari tag script untuk TinyMCE dan ganti `LINK_TINYMCE` dengan URL CDN yang menyertakan API Key Anda (Dapatkan gratis di [tiny.cloud](https://www.tiny.cloud/)).
-  * Formatnya harus seperti ini:
-    ```
-    <!-- Ganti dengan cdn dari tinymce yang sudah ada api keynya (penting agar tinymce bisa di load) -->
-    <script src="LINK_TINYMCE" referrerpolicy="origin" crossorigin="anonymous"></script>
-    ```
+Buka file HTML/JS utama (`panel_admin.html`) di text editor Anda dan lakukan penyesuaian berikut:
 
-#### **2. Buat Halaman Baru**
+### **A. Konfigurasi Firebase**
+Cari bagian `const firebaseConfig = { ... }` dan ganti isinya dengan konfigurasi project Anda.
+*   *Cara mendapatkan config:* Di Firebase Console > Project Overview > Klik ikon Web (</>) > Register App > Copy bagian `firebaseConfig`.
+
+### **B. Konfigurasi Blog ID**
+Cari bagian `const BLOG_ID = "..."`.
+*   Ganti isinya dengan **ID Blog** Anda (bisa dilihat di URL saat membuka dashboard Blogger, angka panjang setelah `blogID=`).
+
+> **Catatan:** Editor teks menggunakan **QuillJS** yang sudah terintegrasi secara otomatis (tanpa API Key), jadi tidak perlu konfigurasi tambahan untuk editor.
+
+---
+
+## 3. Cara Pemasangan di Blogger
+
+Panel Admin ini akan dipasang pada **Halaman Statis (Page)** rahasia di Blogger.
+
+### **Langkah-langkah:**
 
 1. Masuk ke Dashboard Blogger.
 2. Buka menu **Halaman (Pages)**.
 3. Klik **Halaman Baru (New Page)**.
-4. Beri judul, misalnya *Admin Panel* atau nama lain yang tidak mudah ditebak.
+4. Beri judul halaman (misalnya: *Admin Panel* atau nama acak agar sulit ditebak orang lain).
+5. Ubah mode editor dari *Tampilan Menulis* ke **Tampilan HTML (HTML View)**.
+6. Hapus semua kode bawaan yang ada di editor.
+7. **Copy seluruh isi file** `panel_admin.html` yang sudah Anda edit tadi, lalu **Paste** ke editor Blogger.
+8. Pada menu **Options/Pilihan** (sebelah kanan):
+   * Pilih **Jangan izinkan, sembunyikan yang ada** pada bagian Komentar pembaca.
+9. Klik **Publikasikan (Publish)**.
 
-#### **3. Masukkan Kode HTML**
-
-1. Ubah mode editor ke **Tampilan HTML (HTML View)**.
-2. Hapus semua isi yang ada.
-3. Copy seluruh isi file `panel_admin.html` yang sudah diedit tadi dan paste ke editor.
-
-#### **4. Pengaturan Halaman**
-
-* Pada bagian **Options/Pilihan**, set:
-  * **Komentar:** *Jangan izinkan, sembunyikan yang ada*.
-* Klik **Publikasikan (Publish)**.
-
-#### **5. Akses Panel Admin**
-
-Buka halaman tersebut. Panel admin siap digunakan.
+Panel Admin Anda sekarang sudah aktif.
 
 ---
 
-## 2. Konfigurasi Firestore Database (Rules)
+## 4. Konfigurasi Keamanan Firestore (Rules)
 
-Salin kode berikut dan tempelkan di tab **Rules** pada Firestore Database di Firebase Console.
+Agar database aman dan hanya bisa diakses oleh pengguna yang login, ganti aturan database Anda.
 
-### **Rules Firestore**
+1. Buka Firebase Console > **Firestore Database**.
+2. Masuk ke tab **Rules**.
+3. Hapus semua kode yang ada, lalu tempelkan kode di bawah ini:
 
-```
+```js
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -83,6 +96,5 @@ service cloud.firestore {
   }
 }
 ```
-download
-content_copy
-expand_less
+Klik Publish.
+
